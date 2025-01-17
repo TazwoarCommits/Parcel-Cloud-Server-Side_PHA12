@@ -79,6 +79,13 @@ async function run() {
             res.send(result) ; 
         })
 
+        app.get("/parcels" , async (req , res) => {
+            const email = req.query.email ;
+            const filter = {email : email} ;
+            const result = await parcelsCollection.find(filter).toArray() ;
+            res.send(result) ;
+
+        })
 
 
         // Send a ping to confirm a successful connection
