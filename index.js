@@ -29,6 +29,29 @@ async function run() {
           
         const parcelsCollection = client.db("parcel-cloud").collection("parcels") ;
         const usersCollection = client.db("parcel-cloud").collection("users") ;
+        const deliveryMansCollection = client.db("parcel-cloud").collection("delivery-man") ;
+
+        // DeliverMan related APIs
+
+        app.post("/delivery-man" , async (req , res) => {
+            const newUser = req.body ;
+            const filter = {email : newUser.email} ; 
+            const existingUser = await deliveryMansCollection.findOne(filter) ;
+            if(existingUser){
+                res.send({message : "user already exist" , insertedId : null})
+            }
+            else{
+                const result = await deliveryMansCollection.insertOne(newUser) ;
+                res.send(result) ;
+            }
+        }) ;
+
+        app.get("/delivery-man" , async (req , res) => {
+            const result = await deliveryMansCollection.find().toArray() ;
+            res.send(result) ;
+        })
+
+        // users related APIs
 
         app.get("/users" , async (req , res) => {
                const result = await usersCollection.find().toArray() ;
