@@ -31,7 +31,7 @@ async function run() {
         const usersCollection = client.db("parcel-cloud").collection("users") ;
         const deliveryMansCollection = client.db("parcel-cloud").collection("delivery-man") ;
 
-        // DeliverMan related APIs
+        // DeliveryMan related APIs
 
         app.post("/delivery-man" , async (req , res) => {
             const newUser = req.body ;
@@ -69,6 +69,14 @@ async function run() {
                 const result = await usersCollection.insertOne(newUser) ;
                 res.send(result) ;
             }
+        })
+
+        // Parcels related APIs 
+
+        app.post("/parcels" , async (req , res) => {
+            const newParcel = req.body ; 
+            const result = await parcelsCollection.insertOne(newParcel) ;
+            res.send(result) ; 
         })
 
 
