@@ -101,7 +101,7 @@ async function run() {
         // Parcels related APIs 
 
         app.post("/parcels" , async (req , res) => {
-            const newParcel = req.body ; 
+            const newParcel ={... req.body , createdAt : new Date() }; 
             const result = await parcelsCollection.insertOne(newParcel) ;
             res.send(result) ; 
         })
