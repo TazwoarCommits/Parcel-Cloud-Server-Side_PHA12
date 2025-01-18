@@ -106,6 +106,36 @@ async function run() {
             res.send(result) ; 
         })
 
+        app.get("/parcels/:id" , async (req , res) => {
+            const id = req.params.id ;
+            const filter = {_id : new ObjectId(id)} ; 
+            const result = await parcelsCollection.findOne(filter);
+            res.send(result) ;
+        })
+
+        app.patch("/parcels/:id" , async( req , res) => {
+            const id = req.params.id ;
+            const item = req.body ; 
+            const filter = {_id : new ObjectId(id)} ;
+            console.log(item , id)
+            const updatedDoc = {
+                $set : {
+                   phone : item.phone ,
+                   parcel_type : item.parcel_type,
+                   weight : item.weight,
+                   receivers_name : item.receivers_name,
+                   receivers_phone: item.receivers_phone,
+                   delivery_address: item.delivery_address,
+                   requested_date: item.requested_date,
+                   delivery_latitude : item.delivery_latitude,
+                   delivery_longitude: item.delivery_longitude,
+                   cost : item.cost ,
+                }
+            }
+            const result = await parcelsCollection.updateOne(filter , updatedDoc) ;
+            res.send(result)
+        })
+
         app.get("/parcels" , async (req , res) => {
             const email = req.query.email ;
             const filter = {email : email} ;
