@@ -28,6 +28,7 @@ async function run() {
         await client.connect();
           
         const parcelsCollection = client.db("parcel-cloud").collection("parcels") ;
+        const reviewsCollection = client.db("parcel-cloud").collection("reviews") ;
         const usersCollection = client.db("parcel-cloud").collection("users") ;
         const deliveryMansCollection = client.db("parcel-cloud").collection("delivery-man") ;
 
@@ -117,7 +118,6 @@ async function run() {
             const id = req.params.id ;
             const item = req.body ; 
             const filter = {_id : new ObjectId(id)} ;
-            console.log(item , id)
             const updatedDoc = {
                 $set : {
                    phone : item.phone ,
@@ -142,6 +142,21 @@ async function run() {
             const result = await parcelsCollection.find(filter).toArray() ;
             res.send(result) ;
 
+        })
+
+        app.delete("/parcels/:id" , async (req , res) => {
+            const id = req.params.id ; 
+            const filter = {_id : new ObjectId(id)} ;
+            const result = await parcelsCollection.deleteOne(filter) ;
+            res.send(result)
+        })
+
+        // reviews related APIs
+
+        app.post("/reviews" , async (req , res) => {
+            const review = req.body ;
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result) ;
         })
 
 
