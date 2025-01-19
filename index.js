@@ -52,6 +52,13 @@ async function run() {
             res.send(result) ;
         })
 
+        app.get("/delivery-man/:email" , async (req , res) => {
+            const email = req.params.email ;
+            const filter = {email : email} ;
+            const result = await deliveryMansCollection.findOne(filter) ;
+            res.send(result);
+        })
+
         
 
         // users related APIs
@@ -59,14 +66,26 @@ async function run() {
         app.get("/users" , async (req , res) => {
                const result = await usersCollection.find().toArray() ;
                res.send(result) ;
+        }) ;
+
+        app.get("/users/admin/:email" , async (req, res) => {
+            const email = req.params.email ; 
+            const filter = {email : email} ;
+            const user = await usersCollection.findOne(filter) ; 
+
+            let admin = false ;
+            if(user) {
+                admin = user?.role ==="admin"
+            } 
+            // console.log(admin);
+            res.send(admin);
         })
 
         app.get("/users/:email" , async (req , res) => {
             const email = req.params.email ; 
-           
             const filter = {email : email} ; 
             const result = await usersCollection.findOne(filter) ;
-           
+            console.log(result , filter);
             res.send(result) ;
         })
 
