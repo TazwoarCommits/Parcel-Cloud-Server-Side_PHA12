@@ -126,6 +126,14 @@ async function run() {
             res.send(result) ; 
         })
 
+        app.get("/parcels" , async (req , res) => {
+            const email = req.query.email ;
+            const filter = {email : email} ;
+            const result = await parcelsCollection.find(filter).toArray() ;
+            res.send(result) ;
+
+        })
+
         app.get("/parcels/:id" , async (req , res) => {
             const id = req.params.id ;
             const filter = {_id : new ObjectId(id)} ; 
@@ -155,14 +163,6 @@ async function run() {
             res.send(result)
         })
 
-        app.get("/parcels" , async (req , res) => {
-            const email = req.query.email ;
-            const filter = {email : email} ;
-            const result = await parcelsCollection.find(filter).toArray() ;
-            res.send(result) ;
-
-        })
-
         app.delete("/parcels/:id" , async (req , res) => {
             const id = req.params.id ; 
             const filter = {_id : new ObjectId(id)} ;
@@ -176,7 +176,16 @@ async function run() {
             const review = req.body ;
             const result = await reviewsCollection.insertOne(review);
             res.send(result) ;
-        })
+        }) ;
+
+        app.get("/reviews/:id" , async (req , res) => {
+            const id = req.params.id ;
+            const filter = { deliveryManId : id } ;
+            const result = await reviewsCollection.find(filter).toArray() ;
+            res.send(result) ;
+        }) ;
+
+
 
 
         // Send a ping to confirm a successful connection
