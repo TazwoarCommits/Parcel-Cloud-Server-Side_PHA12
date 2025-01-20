@@ -34,6 +34,13 @@ async function run() {
 
         // DeliveryMan related APIs
 
+        // Fetching all deliveryMen Only by Admin 
+
+        app.get("/delivery-man" , async (req , res) => {
+            const result = await deliveryMansCollection.find().toArray() ;
+            res.send(result) ;
+        })
+
         app.post("/delivery-man" , async (req , res) => {
             const newUser = req.body ;
             const filter = {email : newUser.email} ; 
@@ -47,10 +54,6 @@ async function run() {
             }
         }) ;
 
-        app.get("/delivery-man" , async (req , res) => {
-            const result = await deliveryMansCollection.find().toArray() ;
-            res.send(result) ;
-        })
 
         app.get("/delivery-man/:email" , async (req , res) => {
             const email = req.params.email ;
@@ -61,7 +64,12 @@ async function run() {
 
         
 
-        // users related APIs
+
+         // // ===== Users related APIs ===== // // ;
+
+
+
+        //  getting all users by only
 
         app.get("/users" , async (req , res) => {
                const result = await usersCollection.find().toArray() ;
@@ -81,6 +89,8 @@ async function run() {
         //     res.send(admin);
         // })
 
+        // Fetching a User's Data to specify the role of that user in this app
+
         app.get("/users/:email" , async (req , res) => {
             const email = req.params.email ; 
             const filter = {email : email} ; 
@@ -89,7 +99,9 @@ async function run() {
             res.send(result) ;
         })
 
-        app.patch("/users/:id" , async( req , res) => {
+        // updating a users profile Only By Users
+
+        app.patch("/users/:id" , async (req , res) => {
             const updatedInfo = req.body ;
             const id = req.params.id ; 
             const filter = {_id : new ObjectId(id)} ; 
@@ -105,6 +117,9 @@ async function run() {
             res.send(result)
         })
 
+
+        // post a new user in the database 
+
         app.post("/users" , async (req , res) => {
             const newUser = req.body ;
             const filter = {email : newUser.email} ; 
@@ -118,12 +133,25 @@ async function run() {
             }
         })
 
-        // Parcels related APIs 
+
+
+        // // ===== Parcels related APIs ===== // // ;
+
+
+
+        // Add a new parcel in database
 
         app.post("/parcels" , async (req , res) => {
             const newParcel ={... req.body , createdAt : new Date() }; 
             const result = await parcelsCollection.insertOne(newParcel) ;
             res.send(result) ; 
+        })
+
+        // getting all parcels booked by User 
+        
+        app.get("/parcels" , async (req , res) => {
+            const result = await parcelsCollection.find().sort({createdAt : -1}).toArray() ;
+            res.send(result) ;
         })
 
         app.get("/parcels" , async (req , res) => {
@@ -134,12 +162,16 @@ async function run() {
 
         })
 
+        // Getting a Parcel for details or to update 
+
         app.get("/parcels/:id" , async (req , res) => {
             const id = req.params.id ;
             const filter = {_id : new ObjectId(id)} ; 
             const result = await parcelsCollection.findOne(filter);
             res.send(result) ;
         })
+
+        // update a parcel by user Only
 
         app.patch("/parcels/:id" , async( req , res) => {
             const id = req.params.id ;
@@ -163,6 +195,8 @@ async function run() {
             res.send(result)
         })
 
+        // Cancel A parcel by User Only
+
         app.delete("/parcels/:id" , async (req , res) => {
             const id = req.params.id ; 
             const filter = {_id : new ObjectId(id)} ;
@@ -170,13 +204,21 @@ async function run() {
             res.send(result)
         })
 
-        // reviews related APIs
 
+
+        // // ===== Reviews related APIs ===== // // ;
+
+
+
+        // review of a delivery by a user Only 
+ 
         app.post("/reviews" , async (req , res) => {
             const review = req.body ;
             const result = await reviewsCollection.insertOne(review);
             res.send(result) ;
         }) ;
+
+        // Fetching reviews of a deliveryMan's only By the deliveryMan
 
         app.get("/reviews/:id" , async (req , res) => {
             const id = req.params.id ;
@@ -184,6 +226,7 @@ async function run() {
             const result = await reviewsCollection.find(filter).toArray() ;
             res.send(result) ;
         }) ;
+
 
 
 
