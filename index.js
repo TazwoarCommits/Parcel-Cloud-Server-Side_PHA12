@@ -68,24 +68,24 @@ async function run() {
                res.send(result) ;
         }) ;
 
-        app.get("/users/admin/:email" , async (req, res) => {
-            const email = req.params.email ; 
-            const filter = {email : email} ;
-            const user = await usersCollection.findOne(filter) ; 
+        // app.get("/users/admin/:email" , async (req, res) => {
+        //     const email = req.params.email ; 
+        //     const filter = {email : email} ;
+        //     const user = await usersCollection.findOne(filter) ; 
 
-            let admin = false ;
-            if(user) {
-                admin = user?.role ==="admin"
-            } 
-            // console.log(admin);
-            res.send(admin);
-        })
+        //     let admin = false ;
+        //     if(user) {
+        //         admin = user?.role ==="admin"
+        //     } 
+        //     // console.log(admin);
+        //     res.send(admin);
+        // })
 
         app.get("/users/:email" , async (req , res) => {
             const email = req.params.email ; 
             const filter = {email : email} ; 
             const result = await usersCollection.findOne(filter) ;
-            console.log(result , filter);
+            // console.log(result , filter);
             res.send(result) ;
         })
 
@@ -93,7 +93,7 @@ async function run() {
             const updatedInfo = req.body ;
             const id = req.params.id ; 
             const filter = {_id : new ObjectId(id)} ; 
-            console.log(updatedInfo , filter , id) ;
+            // console.log(updatedInfo , filter , id) ;
             const updatedDoc = {
                 $set : {
                     name : updatedInfo.updatedName ,
