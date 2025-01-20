@@ -154,10 +154,11 @@ async function run() {
             res.send(result) ;
         })
 
-        app.get("/parcels" , async (req , res) => {
+        app.get("/parcels/user" , async (req , res) => {
             const email = req.query.email ;
             const filter = {email : email} ;
             const result = await parcelsCollection.find(filter).toArray() ;
+            console.log(result);
             res.send(result) ;
 
         })
