@@ -154,11 +154,13 @@ async function run() {
             res.send(result) ;
         })
 
+        // Fetching a users parcel by the user
+
         app.get("/parcels/user" , async (req , res) => {
             const email = req.query.email ;
             const filter = {email : email} ;
             const result = await parcelsCollection.find(filter).toArray() ;
-            console.log(result);
+            // console.log(result);
             res.send(result) ;
 
         })
@@ -194,6 +196,22 @@ async function run() {
             }
             const result = await parcelsCollection.updateOne(filter , updatedDoc) ;
             res.send(result)
+        }) ;
+
+        app.patch("/parcels/admin/:id" , async (req , res) => {
+            const id = req.params.id ;
+            const item = req.body ;
+            const filter = {_id : new ObjectId(id)} ;
+            const updatedDoc = {
+                $set : {
+                    status : "in-transit",
+                    deliveryManId : item.deliveryManId ,
+                    approximateDeliveryDate : item.approx_del_date ,
+                }
+            }
+
+            const result = await parcelsCollection.updateOne(filter, updatedDoc) ;
+            res.send(result) ;
         })
 
         // Cancel A parcel by User Only
