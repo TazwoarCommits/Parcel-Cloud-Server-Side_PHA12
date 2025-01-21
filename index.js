@@ -32,7 +32,11 @@ async function run() {
         const usersCollection = client.db("parcel-cloud").collection("users") ;
         const deliveryMansCollection = client.db("parcel-cloud").collection("delivery-man") ;
 
-        // DeliveryMan related APIs
+
+
+        // // ================================== DeliveryMan related APIs =======================================
+
+
 
         // Fetching all deliveryMen Only by Admin 
 
@@ -40,6 +44,8 @@ async function run() {
             const result = await deliveryMansCollection.find().toArray() ;
             res.send(result) ;
         })
+
+        // register as an user for anyone
 
         app.post("/delivery-man" , async (req , res) => {
             const newUser = req.body ;
@@ -54,6 +60,24 @@ async function run() {
             }
         }) ;
 
+        // For updating an users role from user to deliveryman
+
+        app.post("/delivery-man/admin" , async (req , res) => {
+            const newUser = req.body ;
+            const filter = {email : newUser.email} ; 
+            const existingUser = await deliveryMansCollection.findOne(filter) ;
+            if(existingUser){
+                res.send({message : "user already exist" , insertedId : null})
+            }
+            else{
+                const result = await deliveryMansCollection.insertOne(newUser) ;
+                // console.log(result);
+                res.send(result) ;
+            }
+        }) ;
+
+
+        // fetching user to determine the role
 
         app.get("/delivery-man/:email" , async (req , res) => {
             const email = req.params.email ;
@@ -65,29 +89,17 @@ async function run() {
         
 
 
-         // // ===== Users related APIs ===== // // ;
+         // // ======================================= Users related APIs ============================ // // ;
 
 
 
-        //  getting all users by only
+        //  getting all users by only Admin
 
         app.get("/users" , async (req , res) => {
                const result = await usersCollection.find().toArray() ;
                res.send(result) ;
         }) ;
 
-        // app.get("/users/admin/:email" , async (req, res) => {
-        //     const email = req.params.email ; 
-        //     const filter = {email : email} ;
-        //     const user = await usersCollection.findOne(filter) ; 
-
-        //     let admin = false ;
-        //     if(user) {
-        //         admin = user?.role ==="admin"
-        //     } 
-        //     // console.log(admin);
-        //     res.send(admin);
-        // })
 
         // Fetching a User's Data to specify the role of that user in this app
 
@@ -117,8 +129,21 @@ async function run() {
             res.send(result)
         })
 
+        // Updating a users role to a admin Only By Admin
 
-        // post a new user in the database 
+        app.patch("/users/admin/:id" , async (req , res) => {
+            const id = req.params.id ;
+            const filter = { _id : new ObjectId(id) } ;
+            const updatedDoc = {
+                $set : {
+                    role : "admin"
+                }
+            }
+            const result = await usersCollection.updateOne(filter , updatedDoc) ;
+            res.send(result) ;
+        })
+
+        // register for anyone
 
         app.post("/users" , async (req , res) => {
             const newUser = req.body ;
@@ -133,13 +158,23 @@ async function run() {
             }
         })
 
+        // deleting an user to update role into deliveryman since it has separate collections 
+
+        app.delete("/users/admin/:id" , async(req , res) => {
+            const id = req.params.id ;
+            const filter = { _id : new ObjectId(id)} ;
+            const result = await usersCollection.deleteOne(filter) ; 
+            // console.log( "delete user ",result);
+            res.send(result);
+        })
 
 
-        // // ===== Parcels related APIs ===== // // ;
+
+        // //================================== Parcels related APIs =============================== // // ;
 
 
 
-        // Add a new parcel in database
+        // Add a new parcel in database by User
 
         app.post("/parcels" , async (req , res) => {
             const newParcel ={... req.body , createdAt : new Date() }; 
@@ -147,14 +182,7 @@ async function run() {
             res.send(result) ; 
         })
 
-        // getting all parcels booked by User 
-        
-        app.get("/parcels" , async (req , res) => {
-            const result = await parcelsCollection.find().sort({createdAt : -1}).toArray() ;
-            res.send(result) ;
-        })
-
-        // Fetching a users parcel by the user
+        // Fetching a users parcel only by the user
 
         app.get("/parcels/user" , async (req , res) => {
             const email = req.query.email ;
@@ -163,16 +191,18 @@ async function run() {
             // console.log(result);
             res.send(result) ;
 
-        })
+        }) 
 
-        // Getting a Parcel for details or to update 
+
+        // Getting a Parcel for details or to update only by the user
 
         app.get("/parcels/:id" , async (req , res) => {
             const id = req.params.id ;
             const filter = {_id : new ObjectId(id)} ; 
             const result = await parcelsCollection.findOne(filter);
             res.send(result) ;
-        })
+        }) ;
+
 
         // update a parcel by user Only
 
@@ -195,10 +225,31 @@ async function run() {
                 }
             }
             const result = await parcelsCollection.updateOne(filter , updatedDoc) ;
-            res.send(result)
+            res.send(result) ;
+
         }) ;
 
-        app.patch("/parcels/admin/:id" , async (req , res) => {
+
+          // Cancel A parcel by User Only
+
+          app.delete("/parcels/:id" , async (req , res) => {
+            const id = req.params.id ; 
+            const filter = {_id : new ObjectId(id)} ;
+            const result = await parcelsCollection.deleteOne(filter) ;
+            res.send(result) ;
+        });
+
+
+        // getting all parcels by Admin
+        
+        app.get("/parcels" , async (req , res) => {
+            const result = await parcelsCollection.find().sort({createdAt : -1}).toArray() ;
+            res.send(result) ;
+        }) ;
+
+         // Update a parcels status and assigning deliveryman and approximate date 
+
+         app.patch("/parcels/admin/:id" , async (req , res) => {
             const id = req.params.id ;
             const item = req.body ;
             const filter = {_id : new ObjectId(id)} ;
@@ -212,20 +263,41 @@ async function run() {
 
             const result = await parcelsCollection.updateOne(filter, updatedDoc) ;
             res.send(result) ;
-        })
+        }) ;
 
-        // Cancel A parcel by User Only
 
-        app.delete("/parcels/:id" , async (req , res) => {
+        // deliveryman fetching parcels assigned to him by Admin
+
+        app.get("/parcels/myList/:id" , async( req , res) => {
             const id = req.params.id ; 
-            const filter = {_id : new ObjectId(id)} ;
-            const result = await parcelsCollection.deleteOne(filter) ;
+            const filter = { deliveryManId : id} ;
+            const result = await parcelsCollection.find(filter).toArray() ;
+            // console.log(result);
+            res.send(result) ;
+
+        }) ;
+
+
+        // delivery man updating status if it is delivered or cancelled {{{{ TODO : UPDATE DELIVERYMANS DELIVERYCOUNT  }}}}
+
+        app.patch("/parcels/delivery/:id" , async (req , res) => {
+            const id = req.params.id ;
+            const updatedStatus = req.body ;
+            console.log(updatedStatus.newStatus);
+            const filter = {_id : new ObjectId(id)}
+            const updatedDoc = {
+                $set : {
+                    status : updatedStatus.newStatus ,
+                }
+            }
+            // if(updatedStatus.newStatus === "delivered"){
+            // }
+            const result = await parcelsCollection.updateOne(filter , updatedDoc);
             res.send(result)
         })
 
 
-
-        // // ===== Reviews related APIs ===== // // ;
+        // // ========================================== Reviews related APIs ================================== // // ;
 
 
 
