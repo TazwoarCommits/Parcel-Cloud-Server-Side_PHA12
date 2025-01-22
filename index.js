@@ -312,8 +312,22 @@ async function run() {
         // review of a delivery by a user Only 
 
         app.post("/reviews", async (req, res) => {
-            const review = req.body;
+            const review = req.body; 
             const result = await reviewsCollection.insertOne(review);
+            if(result.insertedId){
+                const filter = {_id : new ObjectId(review.deliveryManId)} ;
+                const deliveryman = await deliveryMansCollection.findOne(filter) ;
+                const newReviewCount = deliveryman.reviewCount + 1 ;
+                const newRating = (deliveryman.review * deliveryman.reviewCount + review.rating) / newReviewCount ;
+                const updatedDoc = {
+                    $set : {
+                        review : parseFloat(newRating).toFixed(2) ,
+                       reviewCount : newReviewCount
+                    }
+                }
+                const updatedResult = await deliveryMansCollection.updateOne(filter , updatedDoc) ;
+                // console.log(updatedResult);
+            }
             res.send(result);
         });
 
@@ -321,8 +335,8 @@ async function run() {
 
         app.get("/reviews/:id", async (req, res) => {
             const id = req.params.id;
-            const filter = { deliveryManId: id };
-            const result = await reviewsCollection.find(filter).toArray();
+            const filter = { deliveryManId : id };
+            const result = await reviewsCollection.find(filter).sort({createdAt : -1}).toArray();
             res.send(result);
         });
 
