@@ -1,4 +1,4 @@
-import express from "express"
+import express, { query } from "express"
 import cors from "cors"
 import "dotenv/config"
 import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
@@ -96,9 +96,19 @@ async function run() {
         //  getting all users by only Admin
 
         app.get("/users", async (req, res) => {
+            const query = req.query;
+            console.log(query);
             const result = await usersCollection.find().toArray();
             res.send(result);
         });
+
+
+        // getting all users by only Admin by user
+
+        app.get("/usersCount" , async (req , res) => {
+            const count = await usersCollection.estimatedDocumentCount() ;
+            res.send({count}) ; //we have to send count data as an object else it will crash
+        })
 
 
         // Fetching a User's Data to specify the role of that user in this app
@@ -143,7 +153,7 @@ async function run() {
             res.send(result);
         })
 
-        // register for anyone
+        // registration for anyone
 
         app.post("/users", async (req, res) => {
             const newUser = req.body;
@@ -178,7 +188,17 @@ async function run() {
 
         app.post("/parcels", async (req, res) => {
             const newParcel = { ...req.body, createdAt: new Date() };
+            const filter = { email : newParcel.email} ;
             const result = await parcelsCollection.insertOne(newParcel);
+            if(result.insertedId){
+                const user = await usersCollection.findOne(filter);
+                const updatedDoc = {
+                    $set : {
+                        totalBookedParcel : user.totalBookedParcel+1
+                    }
+                }
+                const updatedUser = await usersCollection.updateOne(filter , updatedDoc)
+            }
             res.send(result);
         })
 
