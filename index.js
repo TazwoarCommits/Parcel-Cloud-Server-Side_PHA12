@@ -243,7 +243,17 @@ async function run() {
         // getting all parcels by Admin
 
         app.get("/parcels", async (req, res) => {
-            const result = await parcelsCollection.find().sort({ createdAt: -1 }).toArray();
+            const sortStart = req.query?.sortStart ;
+            const sortEnd = req.query?.sortEnd ;
+            let sortQuery = {} ;
+            if(sortStart && sortEnd){
+                 sortQuery = {
+                    ...sortQuery,
+                     createdAt : {$gte : new Date(sortStart) , $lte : new Date(sortEnd) }
+                }
+            }
+
+            const result = await parcelsCollection.find(sortQuery).sort({ createdAt: -1 }).toArray();
             res.send(result);
         });
 
@@ -291,16 +301,16 @@ async function run() {
             }
             if (updatedStatus.newStatus === "delivered") {
                 const query = { _id: new ObjectId(updatedStatus.deliverymanId) }
-                const deliveryman = await deliveryMansCollection.findOne(query) 
+                const deliveryman = await deliveryMansCollection.findOne(query)
                 const updatedDeliveryCount = {
                     $set: {
-                        delivered : deliveryman.delivered + 1 ,
+                        delivered: deliveryman.delivered + 1,
                     }
                 }
 
-                const updateResult = await deliveryMansCollection.updateOne(query , updatedDeliveryCount)
+                const updateResult = await deliveryMansCollection.updateOne(query, updatedDeliveryCount)
             }
-            const result = await parcelsCollection.updateOne(filter , updatedDoc);
+            const result = await parcelsCollection.updateOne(filter, updatedDoc);
             res.send(result)
         })
 
@@ -312,20 +322,20 @@ async function run() {
         // review of a delivery by a user Only 
 
         app.post("/reviews", async (req, res) => {
-            const review = req.body; 
+            const review = req.body;
             const result = await reviewsCollection.insertOne(review);
-            if(result.insertedId){
-                const filter = {_id : new ObjectId(review.deliveryManId)} ;
-                const deliveryman = await deliveryMansCollection.findOne(filter) ;
-                const newReviewCount = deliveryman.reviewCount + 1 ;
-                const newRating = (deliveryman.review * deliveryman.reviewCount + review.rating) / newReviewCount ;
+            if (result.insertedId) {
+                const filter = { _id: new ObjectId(review.deliveryManId) };
+                const deliveryman = await deliveryMansCollection.findOne(filter);
+                const newReviewCount = deliveryman.reviewCount + 1;
+                const newRating = (deliveryman.review * deliveryman.reviewCount + review.rating) / newReviewCount;
                 const updatedDoc = {
-                    $set : {
-                        review : parseFloat(newRating).toFixed(2) ,
-                       reviewCount : newReviewCount
+                    $set: {
+                        review: parseFloat(newRating).toFixed(2),
+                        reviewCount: newReviewCount
                     }
                 }
-                const updatedResult = await deliveryMansCollection.updateOne(filter , updatedDoc) ;
+                const updatedResult = await deliveryMansCollection.updateOne(filter, updatedDoc);
                 // console.log(updatedResult);
             }
             res.send(result);
@@ -335,8 +345,8 @@ async function run() {
 
         app.get("/reviews/:id", async (req, res) => {
             const id = req.params.id;
-            const filter = { deliveryManId : id };
-            const result = await reviewsCollection.find(filter).sort({createdAt : -1}).toArray();
+            const filter = { deliveryManId: id };
+            const result = await reviewsCollection.find(filter).sort({ createdAt: -1 }).toArray();
             res.send(result);
         });
 
