@@ -96,9 +96,11 @@ async function run() {
         //  getting all users by only Admin
 
         app.get("/users", async (req, res) => {
-            const query = req.query;
-            console.log(query);
-            const result = await usersCollection.find().toArray();
+            const page = parseInt(req.query.page);
+            const limit = parseInt(req.query.limit) ;
+            const skip = page*limit ;
+            console.log(page,limit,skip);
+            const result = await usersCollection.find().skip(skip).limit(limit).toArray();
             res.send(result);
         });
 
