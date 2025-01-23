@@ -93,13 +93,12 @@ async function run() {
 
 
 
-        //  getting all users by only Admin
+        //  getting all users by only Admin with pagination
 
         app.get("/users", async (req, res) => {
             const page = parseInt(req.query.page);
-            const limit = parseInt(req.query.limit) ;
-            const skip = page*limit ;
-            console.log(page,limit,skip);
+            const limit = parseInt(req.query.limit);
+            const skip = page * limit;
             const result = await usersCollection.find().skip(skip).limit(limit).toArray();
             res.send(result);
         });
@@ -107,9 +106,9 @@ async function run() {
 
         // getting all users by only Admin by user
 
-        app.get("/usersCount" , async (req , res) => {
-            const count = await usersCollection.estimatedDocumentCount() ;
-            res.send({count}) ; //we have to send count data as an object else it will crash
+        app.get("/usersCount", async (req, res) => {
+            const count = await usersCollection.estimatedDocumentCount();
+            res.send({ count }); //we have to send count data as an object else it will crash
         })
 
 
@@ -190,16 +189,16 @@ async function run() {
 
         app.post("/parcels", async (req, res) => {
             const newParcel = { ...req.body, createdAt: new Date() };
-            const filter = { email : newParcel.email} ;
+            const filter = { email: newParcel.email };
             const result = await parcelsCollection.insertOne(newParcel);
-            if(result.insertedId){
+            if (result.insertedId) {
                 const user = await usersCollection.findOne(filter);
                 const updatedDoc = {
-                    $set : {
-                        totalBookedParcel : user.totalBookedParcel+1
+                    $set: {
+                        totalBookedParcel: user.totalBookedParcel + 1
                     }
                 }
-                const updatedUser = await usersCollection.updateOne(filter , updatedDoc)
+                const updatedUser = await usersCollection.updateOne(filter, updatedDoc)
             }
             res.send(result);
         })
@@ -265,13 +264,13 @@ async function run() {
         // getting all parcels by Admin
 
         app.get("/parcels", async (req, res) => {
-            const sortStart = req.query?.sortStart ;
-            const sortEnd = req.query?.sortEnd ;
-            let sortQuery = {} ;
-            if(sortStart && sortEnd){
-                 sortQuery = {
+            const sortStart = req.query?.sortStart;
+            const sortEnd = req.query?.sortEnd;
+            let sortQuery = {};
+            if (sortStart && sortEnd) {
+                sortQuery = {
                     ...sortQuery,
-                     createdAt : {$gte : new Date(sortStart) , $lte : new Date(sortEnd) }
+                    createdAt: { $gte: new Date(sortStart), $lte: new Date(sortEnd) }
                 }
             }
 
@@ -337,7 +336,7 @@ async function run() {
         })
 
 
-        // // ========================================== Reviews related APIs ================================== // // ;
+        // // ========================================== Reviews related APIs ================================== // // 
 
 
 
@@ -372,6 +371,22 @@ async function run() {
             res.send(result);
         });
 
+        // // ========================================== Stats related APIs ================================== // // 
+
+        app.get("/admin/statistic", async (req, res) => {
+            const parcels = await parcelsCollection.aggregate([
+                {
+                    $group: {
+                      _id: { $dateToString: { format: "%m-%d-%Y", date: "$createdAt" } }, // Group by MM-DD-YYYY
+                      totalBooked: { $sum: 1 },
+                      totalDelivered: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
+                    },
+                  },
+                  { $sort: { _id: 1 } },
+                
+            ]).toArray()
+            res.send(parcels)
+        })
 
 
 
