@@ -373,29 +373,50 @@ async function run() {
 
         // // ========================================== Stats related APIs ================================== // // 
 
+        // fetching data for admin dashboard only by Admin
+
         app.get("/admin/statistic", async (req, res) => {
             const parcels = await parcelsCollection.aggregate([
                 {
                     $group: {
-                      _id: { $dateToString: { format: "%m-%d-%Y", date: "$createdAt" } }, 
-                      totalBooked: { $sum: 1 },
-                      totalDelivered: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
+                        _id: { $dateToString: { format: "%m-%d-%Y", date: "$createdAt" } },
+                        totalBooked: { $sum: 1 },
+                        totalDelivered: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
                     },
-                  },
-                  { $sort: { _id: 1 } },
-                
+                },
+                { $sort: { _id: 1 } },
+
             ]).toArray()
-            res.send(parcels) ;
-        }) ; 
+            res.send(parcels);
+        });
+
+        // fetching total stats of users , parcels , delivered parcels for home page
+
+        app.get("/home/stats", async (req, res) => {
+            const parcels = await parcelsCollection.estimatedDocumentCount();
+            const users = await usersCollection.estimatedDocumentCount();
+            const delivered = await parcelsCollection.countDocuments({ status: "delivered" });
+            res.send({ parcels, users, delivered });
+        });
 
 
-        app.get("/home/stats" , async (req , res) => {
-            const parcels = await parcelsCollection.estimatedDocumentCount() ;
-            const users = await usersCollection.estimatedDocumentCount() ;
-            const delivered = await parcelsCollection.countDocuments({status : "delivered"}) ;
-            res.send({parcels , users , delivered});
+        // fetching top deliverymen for home page
+
+        app.get("/top-deliveryman", async (req, res) => {
+            const data = await deliveryMansCollection.find().toArray();
+            const sortedData = data.sort((a, b) => {
+                if (a.delivered === b.delivered) {                           //if delivery count is Equal go for review
+                    return parseFloat(a.review) - parseFloat(b.review);       
+                }
+
+                return b.delivered - a.delivered;
+            })
+            const topDeliveryMen = sortedData.slice(0 , 3) ;
+
+            res.send(topDeliveryMen) ;
         })
 
+       
 
 
         // Send a ping to confirm a successful connection
