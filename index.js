@@ -377,7 +377,7 @@ async function run() {
             const parcels = await parcelsCollection.aggregate([
                 {
                     $group: {
-                      _id: { $dateToString: { format: "%m-%d-%Y", date: "$createdAt" } }, // Group by MM-DD-YYYY
+                      _id: { $dateToString: { format: "%m-%d-%Y", date: "$createdAt" } }, 
                       totalBooked: { $sum: 1 },
                       totalDelivered: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
                     },
@@ -385,9 +385,16 @@ async function run() {
                   { $sort: { _id: 1 } },
                 
             ]).toArray()
-            res.send(parcels)
-        })
+            res.send(parcels) ;
+        }) ; 
 
+
+        app.get("/home/stats" , async (req , res) => {
+            const parcels = await parcelsCollection.estimatedDocumentCount() ;
+            const users = await usersCollection.estimatedDocumentCount() ;
+            const delivered = await parcelsCollection.countDocuments({status : "delivered"}) ;
+            res.send({parcels , users , delivered});
+        })
 
 
 
