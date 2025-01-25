@@ -71,7 +71,7 @@ async function run() {
 
         // Fetching all deliveryMen Only by Admin 
 
-        app.get("/delivery-man", verifyTOken, async (req, res) => {
+        app.get("/delivery-man", async (req, res) => {
             const result = await deliveryMansCollection.find().toArray();
             res.send(result);
         })
@@ -93,7 +93,7 @@ async function run() {
 
         // For updating an users role from user to deliveryman by Admin
 
-        app.post("/delivery-man/admin", verifyTOken, async (req, res) => {
+        app.post("/delivery-man/admin", async (req, res) => {
             const newUser = req.body;
             const filter = { email: newUser.email };
             const existingUser = await deliveryMansCollection.findOne(filter);
@@ -110,7 +110,7 @@ async function run() {
 
         // fetching user to determine the role by useUSer() hook
 
-        app.get("/delivery-man/:email", verifyTOken, async (req, res) => {
+        app.get("/delivery-man/:email", async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const result = await deliveryMansCollection.findOne(filter);
@@ -126,7 +126,7 @@ async function run() {
 
         //  getting all users by only Admin with pagination
 
-        app.get("/users", verifyTOken, async (req, res) => {
+        app.get("/users", async (req, res) => {
             const page = parseInt(req.query.page);
             const limit = parseInt(req.query.limit);
             const skip = page * limit;
@@ -137,7 +137,7 @@ async function run() {
 
         // getting all usersCount by only Admin fot pagination
 
-        app.get("/usersCount", verifyTOken, async (req, res) => {
+        app.get("/usersCount",  async (req, res) => {
             const count = await usersCollection.estimatedDocumentCount();
             res.send({ count }); //we have to send count data as an object else it will crash
         })
@@ -145,7 +145,7 @@ async function run() {
 
         // Fetching a User's Data to specify the role of that user in this app
 
-        app.get("/users/:email", verifyTOken, async (req, res) => {
+        app.get("/users/:email", async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const result = await usersCollection.findOne(filter);
@@ -155,7 +155,7 @@ async function run() {
 
         // updating a users profile Only By User
 
-        app.patch("/users/:id", verifyTOken, async (req, res) => {
+        app.patch("/users/:id", async (req, res) => {
             const updatedInfo = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -173,7 +173,7 @@ async function run() {
 
         // Updating a users role to a admin Only By Admin
 
-        app.patch("/users/admin/:id", verifyTOken, async (req, res) => {
+        app.patch("/users/admin/:id",  async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updatedDoc = {
@@ -202,7 +202,7 @@ async function run() {
 
         // deleting an user to update role into deliveryman since it has separate collections 
 
-        app.delete("/users/admin/:id", verifyTOken, async (req, res) => {
+        app.delete("/users/admin/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
@@ -218,7 +218,7 @@ async function run() {
 
         // Add a new parcel in database by User
 
-        app.post("/parcels", verifyTOken, async (req, res) => {
+        app.post("/parcels", async (req, res) => {
             const newParcel = { ...req.body, createdAt: new Date() };
             const filter = { email: newParcel.email };
             const result = await parcelsCollection.insertOne(newParcel);
@@ -236,7 +236,7 @@ async function run() {
 
         // Fetching a users parcel only by the user
 
-        app.get("/parcels/user", verifyTOken, async (req, res) => {
+        app.get("/parcels/user", async (req, res) => {
             const email = req.query.email;
             const filter = { email: email };
             const result = await parcelsCollection.find(filter).toArray();
@@ -248,7 +248,7 @@ async function run() {
 
         // Getting a Parcel for details or to update only by the user
 
-        app.get("/parcels/:id", verifyTOken, async (req, res) => {
+        app.get("/parcels/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await parcelsCollection.findOne(filter);
@@ -258,7 +258,7 @@ async function run() {
 
         // update a parcel by user Only
 
-        app.patch("/parcels/:id", verifyTOken ,async (req, res) => {
+        app.patch("/parcels/:id", async (req, res) => {
             const id = req.params.id;
             const item = req.body;
             const filter = { _id: new ObjectId(id) };
@@ -284,7 +284,7 @@ async function run() {
 
         // Cancel A parcel by User Only
 
-        app.delete("/parcels/:id", verifyTOken, async (req, res) => {
+        app.delete("/parcels/:id",  async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await parcelsCollection.deleteOne(filter);
@@ -294,7 +294,7 @@ async function run() {
 
         // getting all parcels by Admin
 
-        app.get("/parcels", verifyTOken , async (req, res) => {
+        app.get("/parcels", async (req, res) => {
             const sortStart = req.query?.sortStart;
             const sortEnd = req.query?.sortEnd;
             let sortQuery = {};
@@ -330,7 +330,7 @@ async function run() {
 
         // deliveryman fetching parcels assigned to him by Admin
 
-        app.get("/parcels/myList/:id", verifyTOken, async (req, res) => {
+        app.get("/parcels/myList/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { deliveryManId: id };
             const result = await parcelsCollection.find(filter).toArray();
@@ -342,7 +342,7 @@ async function run() {
 
         // delivery man updating status if it is delivered or cancelled {{{{ TODO : UPDATE DELIVERYMANS DELIVERYCOUNT  }}}}
 
-        app.patch("/parcels/delivery/:id",verifyTOken, async (req, res) => {
+        app.patch("/parcels/delivery/:id", async (req, res) => {
             const id = req.params.id;
             const updatedStatus = req.body;
             const filter = { _id: new ObjectId(id) }
@@ -373,7 +373,7 @@ async function run() {
 
         // review of a delivery by a user Only 
 
-        app.post("/reviews", verifyTOken, async (req, res) => {
+        app.post("/reviews",  async (req, res) => {
             const review = req.body;
             const result = await reviewsCollection.insertOne(review);
             if (result.insertedId) {
@@ -395,7 +395,7 @@ async function run() {
 
         // Fetching reviews of a deliveryMan's only By the deliveryMan
 
-        app.get("/reviews/:id", verifyTOken, async (req, res) => {
+        app.get("/reviews/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { deliveryManId: id };
             const result = await reviewsCollection.find(filter).sort({ createdAt: -1 }).toArray();
@@ -406,7 +406,7 @@ async function run() {
 
         // fetching data for admin dashboard only by Admin
 
-        app.get("/admin/statistic", verifyTOken, async (req, res) => {
+        app.get("/admin/statistic",  async (req, res) => {
             const parcels = await parcelsCollection.aggregate([
                 {
                     $group: {
@@ -451,7 +451,7 @@ async function run() {
 
         // Payment Intent 
 
-        app.post("/create-payment-intent" ,verifyTOken, async (req , res) => {
+        app.post("/create-payment-intent" , async (req , res) => {
             const {amount} = req.body ;
             if (!amount || isNaN(amount) || amount <= 0) {   //it will crash if not for this 
                 return res.status(400).send({ error: "Invalid or missing price. Must be greater than zero." });
