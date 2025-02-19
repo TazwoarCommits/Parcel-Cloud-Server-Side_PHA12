@@ -163,12 +163,20 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     name: updatedInfo.updatedName,
-                    photo: updatedInfo.updatedPhoto
+                    photo: updatedInfo.updatedPhoto,
+                    address : updatedInfo.updatedAddress,
+                    phone : updatedInfo. updatedPhone
                 }
             }
 
             const result = await usersCollection.updateOne(filter, updatedDoc);
-            res.send(result)
+            if(result.matchedCount > 0){
+                res.send(result)
+            }
+            else{
+                const resultB = await deliveryMansCollection.updateOne(filter , updatedDoc) ;
+                res.send(resultB) ;
+            }
         })
 
         // Updating a users role to a admin Only By Admin
